@@ -11,41 +11,122 @@
   </head>
   <body>
     <h1 class="text-body-emphasis">Train Chinese Numbers</h1>
-<div style="margin-top: 50pt" />
-<button class="btn btn-primary btn-lg px-4" onclick="next()">Next</button>
+<div style="margin-top: 24pt"></div>
+<button id="switchModeBtn" class="btn btn-outline-info btn-lg px-4" onclick="toggleMode()"></button>
 
-<div style="margin-top: 20pt" />
-<div id="number"></div>
-<div style="margin-top: 20pt" />
+<div style="margin-top: 20pt"></div>
+<div id="promptLabel" class="text-secondary"></div>
+<div id="number" class="display-4"></div>
+
+<div style="margin-top: 20pt"></div>
+<input id="answerInput" class="form-control form-control-lg" autocomplete="off" placeholder="" />
+
+<div style="margin-top: 12pt"></div>
+<div id="helpText" class="text-secondary"></div>
+
+<div style="margin-top: 20pt"></div>
 <div id="solution"></div>
 
 <script type="text/javascript">
-var count = 0;
 var currentNumber = getRandomNumber();
+var mode = "digits-to-chinese";
+var waitingForNext = false;
 
-document.getElementById("number").innerHTML = numberAsChinese(currentNumber);
+var answerInput = document.getElementById("answerInput");
+var numberEl = document.getElementById("number");
+var solutionEl = document.getElementById("solution");
+var switchModeBtn = document.getElementById("switchModeBtn");
+var promptLabelEl = document.getElementById("promptLabel");
+var helpTextEl = document.getElementById("helpText");
 
-function next() {
-    if (count % 2 == 0) {
-        showDigits();
-    } else {
-        nextNum();
+answerInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        onEnter();
     }
-    count += 1;
+});
+
+toggleModeText();
+renderQuestion();
+
+function onEnter() {
+    if (waitingForNext) {
+        nextQuestion();
+        return;
+    }
+
+    checkAnswer();
+}
+
+function checkAnswer() {
+    var userAnswer = answerInput.value.trim();
+    if (userAnswer.length === 0) {
+        return;
+    }
+
+    var expected = mode === "digits-to-chinese"
+        ? numberAsChinese(currentNumber)
+        : String(currentNumber);
+    var isCorrect = normalizeAnswer(userAnswer) === normalizeAnswer(expected);
+
+    if (isCorrect) {
+        solutionEl.innerHTML = "<span class=\"text-success\">Correct.</span> " +
+            "" + currentNumber + " -> " + numberAsChinese(currentNumber) + " (" + numberAsPinyin(currentNumber) + ")";
+    } else {
+        solutionEl.innerHTML = "<span class=\"text-danger\">Incorrect.</span> " +
+            "Expected: " + expected + " | " + currentNumber + " -> " + numberAsChinese(currentNumber) + " (" + numberAsPinyin(currentNumber) + ")";
+    }
+
+    waitingForNext = true;
+    answerInput.value = "";
+    helpTextEl.textContent = "Press Enter for the next number.";
+    answerInput.focus();
 }
 
 function getRandomNumber() {
     return Math.floor(Math.random() * 1000);
 }
 
-function nextNum() {
+function nextQuestion() {
     currentNumber = getRandomNumber();
-    document.getElementById("number").innerHTML = numberAsChinese(currentNumber);
-    document.getElementById("solution").innerHTML = "";
+    waitingForNext = false;
+    renderQuestion();
 }
 
-function showDigits() {
-    document.getElementById("solution").innerHTML = currentNumber + " - " + numberAsPinyin(currentNumber);
+function renderQuestion() {
+    solutionEl.innerHTML = "";
+    answerInput.value = "";
+
+    if (mode === "digits-to-chinese") {
+        promptLabelEl.textContent = "Digits shown. Type Chinese characters:";
+        numberEl.textContent = String(currentNumber);
+        answerInput.placeholder = "Example: 二百三十五";
+    } else {
+        promptLabelEl.textContent = "Chinese shown. Type digits:";
+        numberEl.textContent = numberAsChinese(currentNumber);
+        answerInput.placeholder = "Example: 235";
+    }
+
+    helpTextEl.textContent = "Type your answer and press Enter.";
+    answerInput.focus();
+}
+
+function toggleMode() {
+    mode = mode === "digits-to-chinese" ? "chinese-to-digits" : "digits-to-chinese";
+    toggleModeText();
+    nextQuestion();
+}
+
+function toggleModeText() {
+    if (mode === "digits-to-chinese") {
+        switchModeBtn.textContent = "Switch: Digits -> Chinese";
+    } else {
+        switchModeBtn.textContent = "Switch: Chinese -> Digits";
+    }
+}
+
+function normalizeAnswer(value) {
+    return value.replace(/\s+/g, "").trim();
 }
 </script>
 </body>
