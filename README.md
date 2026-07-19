@@ -1,9 +1,35 @@
-# Train french numbers online
+# Train Chinese Numbers
 
-This is a saved copy of what I created for me and my wife in late 2023 to train
-french numbers.
+Small web app to practice Chinese numbers.
 
-It was a quick hack I did then, IIRC I tried out some TypeScript then, which I
-never really used before. I think I used Deno to compile this to JavaScript.
+## What it does
 
-Currently deployed at https://french-numbers.s3.eu-central-1.amazonaws.com/index.html
+1. Shows a random number between 0 and 999 in Chinese characters.
+2. On the next click, reveals the corresponding Arabic digits and pinyin pronunciation.
+3. On the following click, generates a new random number.
+
+This creates a simple flashcard loop: guess first, then reveal digits + pronunciation.
+
+## Files
+
+- `app.ts`: conversion logic from number to Chinese characters.
+- `index.html`: UI and click flow.
+
+## Build
+
+Compile TypeScript to JavaScript:
+
+```bash
+tsc
+```
+
+The compiled file is generated in `dist/app.js`.
+
+## Run
+
+Open `index.html` in your browser.
+
+## Notes
+
+- Supported range is 0 to 999.
+- Conversion uses common simplified Chinese characters.
